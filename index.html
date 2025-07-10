@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyBright - Make Your Money Work Smarter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #fdf4ff 0%, #e0e7ff 50%, #ecfeff 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #a855f7 0%, #3b82f6 50%, #06b6d4 100%);
+            color: white;
+            padding: 48px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .header .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            font-weight: 400;
+            margin-bottom: 24px;
+        }
+
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            margin: 32px 40px 0;
+            border-radius: 2px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .form-section {
+            padding: 48px 40px;
+        }
+
+        .step {
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            color: white;
+            line-height: 32px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .step-description {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background: #fafafa;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #a855f7;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .tax-band-info {
+            margin-top: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            border-left: 4px solid;
+        }
+
+        .tax-band-basic {
+            background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+            color: #065f46;
+            border-color: #10b981;
+        }
+
+        .tax-band-higher {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            color: #92400e;
+            border-color: #f59e0b;
+        }
+
+        .tax-band-additional {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            color: #991b1b;
+            border-color: #ef4444;
+        }
+
+        .savings-account {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .savings-account:hover {
+            border-color: #a855f7;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 16px auto 0;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .remove-btn:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+            padding-top: 32px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .nav-btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #6b7280;
+            border-color: #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            color: white;
+            border-color: #a855f7;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            display: none;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            padding: 48px 40px;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .results-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .results-subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+
+        .result-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .result-card h3 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .result-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .icon-isa { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+        .icon-pension { background: linear-gradient(135deg, #fef3c7, #fed7aa); }
+        .icon-savings { background: linear-gradient(135deg, #dcfce7, #bbf7d0); }
+
+        .tax-summary {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border: 1px solid #93c5fd;
+            border-radius: 16px;
+            padding: 32px;
+            margin: 32px 0;
+        }
+
+        .tax-summary h4 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .tax-summary p {
+            margin-bottom: 8px;
+            color: #1e3a8a;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e5e7eb;
+            border-radius: 50%;
+            border-top-color: #a855f7;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .disclaimer-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .disclaimer-content {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .disclaimer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .disclaimer-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .disclaimer-section {
+            margin-bottom: 20px;
+        }
+
+        .disclaimer-section h4 {
+            color: #374151;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .disclaimer-section p {
+            color: #6b7280;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .trust-footer {
+            text-align: center;
+            padding: 24px;
+            background: #f9fafb;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .trust-link {
+            color: #a855f7;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .trust-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .form-section {
+                padding: 32px 24px;
+            }
+
+            .trust-badges {
+                gap: 16px;
+            }
+
+            .navigation {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .nav-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>💡 MoneyBright</h1>
+                <p class="subtitle">Make your money work smarter, not harder</p>
+                <div class="trust-badges">
+                    <div class="trust-badge">
+                        <span>🎯</span>
+                        <span>Simple & Clear</span>
+                    </div>
+                    <div class="trust-badge">
+                        <span>🔒</span>
+                        <span>Safe & Private</span>
+                    </div>
+                    <div class="trust-badge">
+                        <span>⚡</span>
+                        <span>2-Minute Check</span>
+                    </div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <form id="financeForm">
+                <!-- Step 1: Basic Info -->
+                <div class="step active" data-step="1">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <h2 class="step-title">Your Money Basics</h2>
+                        <p class="step-description">Let's start with the essentials - income and tax situation</p>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="salary">Annual Gross Salary (£)</label>
+                            <input type="number" id="salary" name="salary" placeholder="e.g. 45000" required>
+                            <div id="taxBandInfo" class="tax-band-info"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="taxBand">Your Tax Band</label>
+                            <select id="taxBand" name="taxBand" required disabled>
+                                <option value="">Enter salary to see tax band</option>
+                                <option value="basic">Basic Rate (20%)</option>
+                                <option value="higher">Higher Rate (40%)</option>
+                                <option value="additional">Additional Rate (45%)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: ISA & Savings -->
+                <div class="step" data-step="2">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <h2 class="step-title">Your Savings Snapshot</h2>
+                        <p class="step-description">Tell us about your ISAs and savings accounts</p>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="currentIsa">ISA Contributions This Year (£)</label>
+                            <input type="number" id="currentIsa" name="currentIsa" placeholder="e.g. 5000" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dummy">Remaining ISA Allowance</label>
+                            <input type="text" id="remainingIsa" placeholder="Calculated automatically" disabled>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Your Savings Accounts</label>
+                        <div id="savingsAccounts">
+                            <div class="savings-account">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <input type="number" name="savingsAmount[]" placeholder="Amount (£)" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="number" name="savingsRate[]" step="0.01" min="0" max="20" placeholder="Rate (%)" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" name="savingsType[]" placeholder="Account type (e.g. Easy Access)" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" id="addSavingsAccount" class="add-btn">
+                            <span>+</span>
+                            <span>Add Another Account</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Pension -->
+                <div class="step" data-step="3">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <h2 class="step-title">Your Pension Picture</h2>
+                        <p class="step-description">Quick check on your workplace pension contributions</p>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="currentPension">Your Current Pension Contribution (%)</label>
+                            <input type="number" id="currentPension" name="currentPension" placeholder="e.g. 5" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="employerMatch">Employer Matches Up To (%)</label>
+                            <input type="number" id="employerMatch" name="employerMatch" placeholder="e.g. 6" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="salaryExchange">Salary Exchange Available?</label>
+                            <select id="salaryExchange" name="salaryExchange" required>
+                                <option value="">Select option</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                                <option value="unsure">Not sure</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentLoan">Student Loan</label>
+                            <select id="studentLoan" name="studentLoan" required>
+                                <option value="">Select option</option>
+                                <option value="none">None</option>
+                                <option value="plan1">Plan 1 (Started uni before Sept 2012, or Scottish/NI)</option>
+                                <option value="plan2">Plan 2 (Started uni Sept 2012 onwards in England/Wales)</option>
+                                <option value="unsure">Not sure which plan</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="navigation">
+                    <button type="button" id="prevBtn" class="nav-btn btn-secondary" style="visibility: hidden;">
+                        ← Previous
+                    </button>
+                    <button type="button" id="nextBtn" class="nav-btn btn-primary">
+                        Next →
+                    </button>
+                    <button type="submit" id="submitBtn" class="nav-btn btn-primary" style="display: none;">
+                        💡 Show Me My MoneyBright
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="results" class="results">
+            <div id="loading" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Brightening up your money picture...</p>
+                <p style="font-size: 0.9rem; margin-top: 8px;">Finding simple ways to improve your finances</p>
+            </div>
+            <div id="resultsContent"></div>
+        </div>
+
+        <div class="trust-footer">
+            <p>
+                <strong>Your data is secure:</strong> We process your information in real-time and don't store it permanently. 
+                <a href="#" class="trust-link" onclick="showDisclaimer()">Read our full disclaimers</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Disclaimer Modal -->
+    <div id="disclaimerModal" class="disclaimer-modal">
+        <div class="disclaimer-content">
+            <div class="disclaimer-header">
+                <h3 class="disclaimer-title">Important Information</h3>
+                <button class="close-btn" onclick="hideDisclaimer()">&times;</button>
+            </div>
+            
+            <div class="disclaimer-section">
+                <h4>🎓 Educational Purpose Only</h4>
+                <p>This tool provides general information and educational calculations only. We are not regulated by the Financial Conduct Authority (FCA) and do not provide personal financial advice.</p>
+            </div>
+
+            <div class="disclaimer-section">
+                <h4>👤 Individual Circumstances</h4>
+                <p>Your personal situation may differ significantly from these general examples. Tax rules, allowances, and rates can change. Always consider your full financial picture.</p>
+            </div>
+
+            <div class="disclaimer-section">
+                <h4>🎯 Professional Advice</h4>
+                <p>Consider consulting a qualified, FCA-regulated financial advisor before making any significant financial decisions. This tool is designed to help you understand potential opportunities, not replace professional advice.</p>
+            </div>
+
+            <div class="disclaimer-section">
+                <h4>🔒 Data Privacy</h4>
+                <p>Your information is processed in real-time and not stored permanently on our servers. We use secure connections (HTTPS) to protect your data during analysis.</p>
+            </div>
+
+            <div class="disclaimer-section">
+                <h4>📊 Accuracy</h4>
+                <p>While we strive for accuracy, we cannot guarantee the correctness of all calculations or current rates. Tax rules and financial products change regularly.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        // Update progress bar
+        function updateProgress() {
+            const progress = (currentStep - 1) / (totalSteps - 1) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        // Show/hide steps
+        function showStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.querySelector(`[data-step="${step}"]`).classList.add('active');
+            
+            // Update navigation
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            prevBtn.style.visibility = step === 1 ? 'hidden' : 'visible';
+            
+            if (step === totalSteps) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'block';
+            } else {
+                nextBtn.style.display = 'block';
+                submitBtn.style.display = 'none';
+            }
+            
+            updateProgress();
+        }
+
+        // Navigation
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (validateCurrentStep() && currentStep < totalSteps) {
+                currentStep++;
+                showStep(currentStep);
+            }
+        });
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        });
+
+        // Form validation
+        function validateCurrentStep() {
+            const currentStepElement = document.querySelector(`[data-step="${currentStep}"]`);
+            const requiredFields = currentStepElement.querySelectorAll('[required]');
+            
+            for (let field of requiredFields) {
+                if (!field.value.trim()) {
+                    field.focus();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Calculate tax band from salary and update display
+        function updateTaxBandDisplay(salary) {
+            const taxBandInfo = document.getElementById('taxBandInfo');
+            const taxBandSelect = document.getElementById('taxBand');
+            
+            if (!salary || salary < 0) {
+                taxBandInfo.innerHTML = '';
+                taxBandSelect.disabled = true;
+                taxBandSelect.value = '';
+                return;
+            }
+            
+            let taxBand, message, className;
+            
+            if (salary <= 12570) {
+                taxBand = 'basic';
+                message = '✅ No income tax (below personal allowance of £12,570)';
+                className = 'tax-band-basic';
+            } else if (salary <= 50270) {
+                taxBand = 'basic';
+                message = '✅ Basic Rate: 20% tax on income between £12,571 - £50,270';
+                className = 'tax-band-basic';
+            } else if (salary <= 125140) {
+                taxBand = 'higher';
+                message = '⚠️ Higher Rate: 40% tax on income between £50,271 - £125,140';
+                className = 'tax-band-higher';
+            } else {
+                taxBand = 'additional';
+                message = '🚨 Additional Rate: 45% tax on income above £125,140';
+                className = 'tax-band-additional';
+            }
+            
+            taxBandInfo.innerHTML = message;
+            taxBandInfo.className = `tax-band-info ${className}`;
+            taxBandSelect.value = taxBand;
+            taxBandSelect.disabled = false;
+        }
+
+        // Update remaining ISA allowance
+        function updateRemainingIsa() {
+            const currentIsa = parseFloat(document.getElementById('currentIsa').value) || 0;
+            const remaining = Math.max(0, 20000 - currentIsa);
+            document.getElementById('remainingIsa').value = `£${remaining.toLocaleString()} remaining`;
+        }
+
+        // Add savings account functionality
+        let savingsAccountCount = 1;
+        
+        function addSavingsAccount() {
+            savingsAccountCount++;
+            const container = document.getElementById('savingsAccounts');
+            const newAccount = document.createElement('div');
+            newAccount.className = 'savings-account';
+            newAccount.innerHTML = `
+                <button type="button" class="remove-btn" onclick="removeSavingsAccount(this)">×</button>
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="number" name="savingsAmount[]" placeholder="Amount (£)" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <input type="number" name="savingsRate[]" step="0.01" min="0" max="20" placeholder="Rate (%)" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="savingsType[]" placeholder="Account type" required>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newAccount);
+        }
+        
+        function removeSavingsAccount(button) {
+            button.parentElement.remove();
+            savingsAccountCount--;
+        }
+
+        // Modal functions
+        function showDisclaimer() {
+            document.getElementById('disclaimerModal').style.display = 'flex';
+        }
+
+        function hideDisclaimer() {
+            document.getElementById('disclaimerModal').style.display = 'none';
+        }
+
+        // Get current month to calculate remaining months in tax year
+        function getMonthsRemaining() {
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+            
+            let taxYearEnd;
+            if (currentMonth >= 4) {
+                taxYearEnd = new Date(currentYear + 1, 3, 5);
+            } else {
+                taxYearEnd = new Date(currentYear, 3, 5);
+            }
+            
+            const monthsRemaining = Math.max(0, Math.ceil((taxYearEnd - now) / (1000 * 60 * 60 * 24 * 30)));
+            return monthsRemaining;
+        }
+
+        // Generate prompts for Claude API
+        function generateISAPrompt(formData) {
+            const monthsRemaining = getMonthsRemaining();
+            const unusedAllowance = 20000 - formData.currentIsa;
+            
+            return `You are a friendly UK financial education specialist. Provide educational information about ISA opportunities.
+
+User situation:
+- Annual gross income: £${formData.salary}
+- Current tax band: ${formData.taxBand} rate
+- ISA contributions made this tax year: £${formData.currentIsa}
+- Cash savings outside ISA: £${formData.cashSavings}
+- Months remaining in tax year: ${monthsRemaining}
+- Unused ISA allowance: £${unusedAllowance}
+
+Provide educational information about ISA benefits and potential opportunities. Use friendly language like "Many people in your situation consider..." Keep response under 300 words.`;
+        }
+
+        function generatePensionPrompt(formData) {
+            const employerContrib = parseFloat(formData.employerMatch) || 0;
+            const currentContrib = parseFloat(formData.currentPension) || 0;
+            const missedMatch = Math.max(0, employerContrib - currentContrib);
+            
+            return `You are a friendly UK pension education specialist. Provide educational information about pension opportunities.
+
+User situation:
+- Annual gross salary: £${formData.salary}
+- Current tax band: ${formData.taxBand} rate
+- Current pension contributions: ${formData.currentPension}%
+- Employer matches up to: ${formData.employerMatch}%
+- Missed employer match: ${missedMatch}%
+- Salary exchange available: ${formData.salaryExchange}
+
+Explain how pension contributions and employer matching work. Use educational language. Keep response under 300 words.`;
+        }
+
+        function generateSavingsPrompt(data, savingsAccounts) {
+            const unusedISA = 20000 - data.currentIsa;
+            let savingsBreakdown = "Savings accounts:\n";
+            let totalSavings = 0;
+            
+            savingsAccounts.forEach((account, index) => {
+                savingsBreakdown += `- ${account.type}: £${account.amount} at ${account.rate}%\n`;
+                totalSavings += parseFloat(account.amount);
+            });
+            
+            return `You are a friendly UK savings education specialist. Provide educational information about savings optimization.
+
+User situation:
+- Tax band: ${data.taxBand} rate
+- Total cash savings: £${totalSavings}
+- Unused ISA allowance: £${unusedISA}
+- ${savingsBreakdown}
+
+Explain how different savings options work and tax implications. Use educational language. Keep response under 300 words.`;
+        }
+
+        // Calculate tax implications
+        function calculateTaxImplications(data, savingsAccounts) {
+            const taxRates = {
+                'basic': 0.20,
+                'higher': 0.40,
+                'additional': 0.45
+            };
+            
+            const taxRate = taxRates[data.taxBand] || 0;
+            const unusedISA = Math.max(0, 20000 - parseInt(data.currentIsa));
+            
+            let currentTaxableInterest = 0;
+            let totalSavings = 0;
+            
+            savingsAccounts.forEach(account => {
+                const amount = parseFloat(account.amount);
+                const rate = parseFloat(account.rate) / 100;
+                totalSavings += amount;
+                currentTaxableInterest += amount * rate;
+            });
+            
+            const savingsMovedToISA = Math.min(unusedISA, totalSavings);
+            const remainingSavings = totalSavings - savingsMovedToISA;
+            const optimizedRate = 0.048;
+            const optimizedTaxableInterest = remainingSavings * optimizedRate;
+            
+            const currentTax = currentTaxableInterest * taxRate;
+            const optimizedTax = optimizedTaxableInterest * taxRate;
+            
+            return {
+                currentTax: currentTax,
+                optimizedTax: optimizedTax,
+                taxSaved: currentTax - optimizedTax,
+                savingsMovedToISA: savingsMovedToISA
+            };
+        }
+
+        // Claude API call function
+        async function callClaudeAPI(prompt) {
+    try {
+        const response = await fetch('/.netlify/functions/claude', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.content[0].text;
+        
+    } catch (error) {
+        console.error('Claude API Error:', error);
+        throw new Error('Unable to process your request. Please try again.');
+    }
+}
+
+        // Handle form submission
+        document.getElementById('financeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            const savingsAmounts = formData.getAll('savingsAmount[]');
+            const savingsRates = formData.getAll('savingsRate[]');
+            const savingsTypes = formData.getAll('savingsType[]');
+            
+            const savingsAccounts = savingsAmounts.map((amount, index) => ({
+                amount: parseFloat(amount),
+                rate: parseFloat(savingsRates[index]),
+                type: savingsTypes[index]
+            }));
+            
+            data.cashSavings = savingsAccounts.reduce((total, account) => total + account.amount, 0);
+            
+            const resultsDiv = document.getElementById('results');
+            const loadingDiv = document.getElementById('loading');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            resultsDiv.classList.add('show');
+            loadingDiv.style.display = 'block';
+            resultsContent.innerHTML = '';
+            
+            try {
+                const isaPrompt = generateISAPrompt(data);
+                const pensionPrompt = generatePensionPrompt(data);
+                const savingsPrompt = generateSavingsPrompt(data, savingsAccounts);
+                
+                const taxImplications = calculateTaxImplications(data, savingsAccounts);
+                
+                const [isaResult, pensionResult, savingsResult] = await Promise.all([
+                    callClaudeAPI(isaPrompt),
+                    callClaudeAPI(pensionPrompt),
+                    callClaudeAPI(savingsPrompt)
+                ]);
+                
+                loadingDiv.style.display = 'none';
+                
+                resultsContent.innerHTML = `
+                    <div class="results-header">
+                        <h2 class="results-title">Your MoneyBright Report</h2>
+                        <p class="results-subtitle">Simple ways to brighten your financial picture</p>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>
+                            <div class="result-icon icon-isa">🏦</div>
+                            ISA Brightener
+                        </h3>
+                        <div>${isaResult.replace(/\n/g, '<br>')}</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>
+                            <div class="result-icon icon-pension">💼</div>
+                            Pension Booster
+                        </h3>
+                        <div>${pensionResult.replace(/\n/g, '<br>')}</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>
+                            <div class="result-icon icon-savings">💰</div>
+                            Savings Brightener
+                        </h3>
+                        <div>${savingsResult.replace(/\n/g, '<br>')}</div>
+                    </div>
+                    
+                    <div class="tax-summary">
+                        <h4>💡 Your Money Brightener Summary</h4>
+                        <p><strong>Current annual tax on savings interest:</strong> £${taxImplications.currentTax.toFixed(2)}</p>
+                        <p><strong>Potential annual tax with improvements:</strong> £${taxImplications.optimizedTax.toFixed(2)}</p>
+                        <p><strong>Annual difference:</strong> £${taxImplications.taxSaved.toFixed(2)}</p>
+                        <p><strong>Amount perfect for ISA benefits:</strong> £${taxImplications.savingsMovedToISA.toFixed(0)}</p>
+                        <p><em>These are educational examples to brighten your understanding!</em></p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                resultsContent.innerHTML = `
+                    <div class="result-card">
+                        <h3>⚠️ Error</h3>
+                        <p>Sorry, there was an error analyzing your finances. Please try again later.</p>
+                    </div>
+                `;
+            }
+        });
+
+        // Event listeners
+        document.getElementById('salary').addEventListener('input', function() {
+            updateTaxBandDisplay(parseInt(this.value));
+        });
+
+        document.getElementById('currentIsa').addEventListener('input', updateRemainingIsa);
+        document.getElementById('addSavingsAccount').addEventListener('click', addSavingsAccount);
+
+        // Close modal when clicking outside
+        document.getElementById('disclaimerModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideDisclaimer();
+            }
+        });
+
+        // Initialize
+        updateProgress();
+    </script>
+</body>
+</html>
