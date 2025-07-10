@@ -941,45 +941,42 @@ User situation:
 Explain how different savings options work and tax implications. Use educational language. Keep response under 300 words.`;
         }
 
-        // Calculate tax implicationsfunction calculateTaxImplications(data, savingsAccounts) {
-    const taxRates = {
-        'basic': 0.20,
-        'higher': 0.40,
-        'additional': 0.45
-    };
-    
-    const taxRate = taxRates[data.taxBand] || 0;
-    const unusedISA = Math.max(0, 20000 - parseInt(data.currentIsa));
-    
-    let currentTaxableInterest = 0;
-    let totalSavings = 0;
-    
-    // Calculate current situation - ALL money is in taxable accounts
-    savingsAccounts.forEach(account => {
-        const amount = parseFloat(account.amount);
-        const rate = parseFloat(account.rate) / 100;
-        totalSavings += amount;
-        currentTaxableInterest += amount * rate;
-    });
-    
-    // Calculate optimized situation - move money to ISA
-    const savingsMovedToISA = Math.min(unusedISA, totalSavings);
-    const remainingSavings = totalSavings - savingsMovedToISA;
-    
-    // Only the remaining savings (not moved to ISA) generate taxable interest
-    const averageRate = totalSavings > 0 ? currentTaxableInterest / totalSavings : 0;
-    const optimizedTaxableInterest = remainingSavings * averageRate;
-    
-    const currentTax = currentTaxableInterest * taxRate;
-    const optimizedTax = optimizedTaxableInterest * taxRate;
-    
-    return {
-        currentTax: currentTax,
-        optimizedTax: optimizedTax,
-        taxSaved: currentTax - optimizedTax,
-        savingsMovedToISA: savingsMovedToISA
-    };
-}
+        // Calculate tax implications
+        function calculateTaxImplications(data, savingsAccounts) {
+            const taxRates = {
+                'basic': 0.20,
+                'higher': 0.40,
+                'additional': 0.45
+            };
+            
+            const taxRate = taxRates[data.taxBand] || 0;
+            const unusedISA = Math.max(0, 20000 - parseInt(data.currentIsa));
+            
+            let currentTaxableInterest = 0;
+            let totalSavings = 0;
+            
+            savingsAccounts.forEach(account => {
+                const amount = parseFloat(account.amount);
+                const rate = parseFloat(account.rate) / 100;
+                totalSavings += amount;
+                currentTaxableInterest += amount * rate;
+            });
+            
+            const savingsMovedToISA = Math.min(unusedISA, totalSavings);
+            const remainingSavings = totalSavings - savingsMovedToISA;
+            const optimizedRate = 0.048;
+            const optimizedTaxableInterest = remainingSavings * optimizedRate;
+            
+            const currentTax = currentTaxableInterest * taxRate;
+            const optimizedTax = optimizedTaxableInterest * taxRate;
+            
+            return {
+                currentTax: currentTax,
+                optimizedTax: optimizedTax,
+                taxSaved: currentTax - optimizedTax,
+                savingsMovedToISA: savingsMovedToISA
+            };
+        }
 
         // Claude API call function
         async function callClaudeAPI(prompt) {
