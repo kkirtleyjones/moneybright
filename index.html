@@ -886,10 +886,11 @@
 
         // Generate prompts for Claude API
         function generateISAPrompt(formData) {
-            const monthsRemaining = getMonthsRemaining();
-            const unusedAllowance = 20000 - formData.currentIsa;
-            
-            return `You are a friendly UK financial education specialist. Provide educational information about ISA opportunities.
+    const monthsRemaining = getMonthsRemaining();
+    const unusedAllowance = 20000 - formData.currentIsa;
+    const potentialTaxSaving = unusedAllowance * 0.04 * (formData.taxBand === 'higher' ? 0.4 : formData.taxBand === 'additional' ? 0.45 : 0.2);
+    
+    return `You are a friendly UK financial education specialist. Provide educational information about ISA opportunities with engaging, motivational language.
 
 User situation:
 - Annual gross income: £${formData.salary}
@@ -899,86 +900,77 @@ User situation:
 - Months remaining in tax year: ${monthsRemaining}
 - Unused ISA allowance: £${unusedAllowance}
 
-Provide educational information about ISA benefits and potential opportunities. Use friendly language like "Many people in your situation consider..." Keep response under 300 words.`;
-        }
+Use engaging language that creates FOMO and motivation while staying educational:
+- If they've used most of their allowance: "Fantastic! You've already secured £${formData.currentIsa * 0.04 * (formData.taxBand === 'higher' ? 0.4 : 0.2)} in potential annual tax savings..."
+- If they have unused allowance: "Here's an interesting opportunity - you could potentially save £${potentialTaxSaving.toFixed(0)} in tax annually..."
+- Include time pressure: "With only ${monthsRemaining} months left in this tax year..."
+- Use phrases like "Many people in your situation discover..." or "You might be surprised to learn..."
+
+Keep response under 300 words and make it feel like discovering a financial opportunity.`;
+}
 
         function generatePensionPrompt(formData) {
-            const employerContrib = parseFloat(formData.employerMatch) || 0;
-            const currentContrib = parseFloat(formData.currentPension) || 0;
-            const missedMatch = Math.max(0, employerContrib - currentContrib);
-            
-            return `You are a friendly UK pension education specialist. Provide educational information about pension opportunities.
+    const employerContrib = parseFloat(formData.employerMatch) || 0;
+    const currentContrib = parseFloat(formData.currentPension) || 0;
+    const missedMatch = Math.max(0, employerContrib - currentContrib);
+    const annualSalary = parseFloat(formData.salary);
+    const missedFreeMoney = (missedMatch / 100) * annualSalary;
+    
+    return `You are a friendly UK pension education specialist. Provide educational information with motivational, engaging language.
 
 User situation:
 - Annual gross salary: £${formData.salary}
 - Current tax band: ${formData.taxBand} rate
 - Current pension contributions: ${formData.currentPension}%
 - Employer matches up to: ${formData.employerMatch}%
-- Missed employer match: ${missedMatch}%
+- Potential missed employer matching: ${missedMatch}% (£${missedFreeMoney.toFixed(0)} annually)
 - Salary exchange available: ${formData.salaryExchange}
 
-Explain how pension contributions and employer matching work. Use educational language. Keep response under 300 words.`;
-        }
+Create engaging educational content:
+- If they're maximizing employer match: "Brilliant! You're already capturing £${(employerContrib/100 * annualSalary).toFixed(0)} in free employer money each year..."
+- If missing employer match: "Here's something interesting - you might be leaving £${missedFreeMoney.toFixed(0)} on the table each year..."
+- Use motivational language: "Your future self will thank you..." or "This could be the easiest money decision you make..."
+- Include urgency: "Every month you wait means missing out on £${(missedFreeMoney/12).toFixed(0)}..."
+
+Keep under 300 words and make pension contributions feel like smart, achievable wins.`;
+}
 
         function generateSavingsPrompt(data, savingsAccounts) {
-            const unusedISA = 20000 - data.currentIsa;
-            let savingsBreakdown = "Savings accounts:\n";
-            let totalSavings = 0;
-            
-            savingsAccounts.forEach((account, index) => {
-                savingsBreakdown += `- ${account.type}: £${account.amount} at ${account.rate}%\n`;
-                totalSavings += parseFloat(account.amount);
-            });
-            
-            return `You are a friendly UK savings education specialist. Provide educational information about savings optimization.
+    const unusedISA = 20000 - data.currentIsa;
+    let savingsBreakdown = "";
+    let totalSavings = 0;
+    let bestRate = 0;
+    
+    savingsAccounts.forEach((account, index) => {
+        savingsBreakdown += `- ${account.type}: £${account.amount} at ${account.rate}%\n`;
+        totalSavings += parseFloat(account.amount);
+        bestRate = Math.max(bestRate, parseFloat(account.rate));
+    });
+    
+    const weightedAverageRate = savingsAccounts.reduce((sum, acc) => {
+        return sum + (parseFloat(acc.amount) * parseFloat(acc.rate));
+    }, 0) / totalSavings;
+    
+    const topSaverRate = 5.2;
+    const potentialExtraInterest = totalSavings * (topSaverRate - weightedAverageRate) / 100;
+    
+    return `You are a friendly UK savings education specialist. Provide educational information with engaging, opportunity-focused language.
 
 User situation:
 - Tax band: ${data.taxBand} rate
 - Total cash savings: £${totalSavings}
 - Unused ISA allowance: £${unusedISA}
+- Current average rate: ${weightedAverageRate.toFixed(2)}%
+- Best rate you have: ${bestRate}%
 - ${savingsBreakdown}
 
-Explain how different savings options work and tax implications. Use educational language. Keep response under 300 words.`;
-        }
+Create motivational educational content:
+- If they have good rates: "Nice work! You're earning ${bestRate}% on some of your savings..."
+- If rates could improve: "Here's an interesting opportunity - moving to a ${topSaverRate}% rate could earn you an extra £${potentialExtraInterest.toFixed(0)} annually..."
+- Use discovery language: "You might not realize..." or "Here's what many savers are discovering..."
+- Include achievement framing: "You're already ahead of most savers by having £${totalSavings} saved..."
 
-        // Calculate tax implicationsfunction calculateTaxImplications(data, savingsAccounts) {
-    const taxRates = {
-        'basic': 0.20,
-        'higher': 0.40,
-        'additional': 0.45
-    };
-    
-    const taxRate = taxRates[data.taxBand] || 0;
-    const unusedISA = Math.max(0, 20000 - parseInt(data.currentIsa));
-    
-    let currentTaxableInterest = 0;
-    let totalSavings = 0;
-    
-    // Calculate current situation - ALL money is in taxable accounts
-    savingsAccounts.forEach(account => {
-        const amount = parseFloat(account.amount);
-        const rate = parseFloat(account.rate) / 100;
-        totalSavings += amount;
-        currentTaxableInterest += amount * rate;
-    });
-    
-    // Calculate optimized situation - move money to ISA
-    const savingsMovedToISA = Math.min(unusedISA, totalSavings);
-    const remainingSavings = totalSavings - savingsMovedToISA;
-    
-    // Only the remaining savings (not moved to ISA) generate taxable interest
-    const averageRate = totalSavings > 0 ? currentTaxableInterest / totalSavings : 0;
-    const optimizedTaxableInterest = remainingSavings * averageRate;
-    
-    const currentTax = currentTaxableInterest * taxRate;
-    const optimizedTax = optimizedTaxableInterest * taxRate;
-    
-    return {
-        currentTax: currentTax,
-        optimizedTax: optimizedTax,
-        taxSaved: currentTax - optimizedTax,
-        savingsMovedToISA: savingsMovedToISA
-    };
+Keep under 300 words and make it feel like uncovering hidden opportunities.`;
 }
 
         // Claude API call function
@@ -1076,7 +1068,18 @@ Explain how different savings options work and tax implications. Use educational
                         </h3>
                         <div>${savingsResult.replace(/\n/g, '<br>')}</div>
                     </div>
-                    
+                    <div class="achievement-badges" style="text-align: center; margin: 32px 0;">
+    <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 12px 20px; border-radius: 25px; display: inline-block; margin: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+        🎯 ${Math.round(((20000 - unusedISA) / 20000) * 100)}% ISA Optimized
+    </div>
+    ${taxImplications.taxSaved > 0 ? 
+        `<div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 12px 20px; border-radius: 25px; display: inline-block; margin: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
+            💰 £${taxImplications.taxSaved.toFixed(0)} Annual Savings Potential
+        </div>` : ''}
+    <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 12px 20px; border-radius: 25px; display: inline-block; margin: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+        ⏰ ${getMonthsRemaining()} Months Left This Tax Year
+    </div>
+</div>
                     <div class="tax-summary">
                         <h4>💡 Your Money Brightener Summary</h4>
                         <p><strong>Current annual tax on savings interest:</strong> £${taxImplications.currentTax.toFixed(2)}</p>
