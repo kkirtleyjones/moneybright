@@ -979,6 +979,28 @@ Educational topics to explore:
 
 Keep under 250 words, educational approach, end with advisor consultation suggestion.`;
 }
+        function calculatePersonalSavingsAllowance(taxBand, totalInterest) {
+    const allowances = {
+        'basic': 1000,
+        'higher': 500,
+        'additional': 0
+    };
+    
+    const allowance = allowances[taxBand] || 0;
+    const allowanceUsed = Math.min(totalInterest, allowance);
+    const allowanceRemaining = allowance - allowanceUsed;
+    const taxableInterest = Math.max(0, totalInterest - allowance);
+    const isAtRisk = allowanceRemaining < (allowance * 0.2); // Within 20% of limit
+    
+    return {
+        allowance,
+        used: allowanceUsed,
+        remaining: allowanceRemaining,
+        taxableInterest,
+        isAtRisk: isAtRisk && allowance > 0,
+        percentageUsed: allowance > 0 ? Math.round((allowanceUsed / allowance) * 100) : 0
+    };
+}
 
         // Calculate tax implications
         function calculateTaxImplications(data, savingsAccounts) {
@@ -1008,12 +1030,16 @@ Keep under 250 words, educational approach, end with advisor consultation sugges
             
             const currentTax = currentTaxableInterest * taxRate;
             const optimizedTax = optimizedTaxableInterest * taxRate;
+
+            const psaData = calculatePersonalSavingsAllowance(data.taxBand, currentTaxableInterest);
+            const actualCurrentTax = psaData.taxableInterest * taxRate;
             
             return {
                 currentTax: currentTax,
                 optimizedTax: optimizedTax,
                 taxSaved: currentTax - optimizedTax,
-                savingsMovedToISA: savingsMovedToISA
+                savingsMovedToISA: savingsMovedToISA,
+                psaData: psaData
             };
         }
 
@@ -1094,7 +1120,25 @@ Keep under 250 words, educational approach, end with advisor consultation sugges
             </p>
         </div>
     </div>
-    
+    <div class="psa-summary" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #93c5fd; border-radius: 16px; padding: 24px; margin: 20px 0;">
+    <h4 style="color: #1e40af; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+        💡 Your Personal Savings Allowance
+    </h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <div>
+            <p style="margin: 0 0 8px 0;"><strong>Annual allowance:</strong> £${taxImplications.psaData.allowance}</p>
+            <p style="margin: 0 0 8px 0;"><strong>Currently using:</strong> £${taxImplications.psaData.used.toFixed(2)}</p>
+        </div>
+        <div>
+            <p style="margin: 0 0 8px 0;"><strong>Remaining:</strong> £${taxImplications.psaData.remaining.toFixed(2)}</p>
+            <p style="margin: 0 0 8px 0;"><strong>Usage:</strong> ${taxImplications.psaData.percentageUsed}%</p>
+        </div>
+    </div>
+    ${taxImplications.psaData.isAtRisk ? 
+        '<div style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px;"><p style="color: #dc2626; font-weight: 600; margin: 0;">⚠️ You\'re using over 80% of your allowance - consider moving money to ISAs to protect future growth</p></div>' : 
+        '<div style="background: #f0f9ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 12px;"><p style="color: #1e40af; font-weight: 600; margin: 0;">✅ You have good headroom in your Personal Savings Allowance</p></div>'
+    }
+</div>
     <div class="result-card">
         <h3>
             <div class="result-icon icon-isa">🏦</div>
