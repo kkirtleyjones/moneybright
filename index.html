@@ -886,60 +886,99 @@
 
         // Generate prompts for Claude API
         function generateISAPrompt(formData) {
-            const monthsRemaining = getMonthsRemaining();
-            const unusedAllowance = 20000 - formData.currentIsa;
-            
-            return `You are a friendly UK financial education specialist. Provide educational information about ISA opportunities.
+    const monthsRemaining = getMonthsRemaining();
+    const unusedAllowance = 20000 - formData.currentIsa;
+    
+    return `You are a friendly UK financial education specialist. Provide educational information about ISA opportunities.
 
 User situation:
 - Annual gross income: £${formData.salary}
 - Current tax band: ${formData.taxBand} rate
 - ISA contributions made this tax year: £${formData.currentIsa}
-- Cash savings outside ISA: £${formData.cashSavings}
-- Months remaining in tax year: ${monthsRemaining}
 - Unused ISA allowance: £${unusedAllowance}
+- Months remaining in tax year: ${monthsRemaining}
 
-Provide educational information about ISA benefits and potential opportunities. Use friendly language like "Many people in your situation consider..." Keep response under 300 words.`;
-        }
+IMPORTANT LANGUAGE GUIDELINES:
+- Use phrases like: "Consider exploring...", "Worth researching...", "Many people investigate..."
+- NEVER use: "You should...", "I recommend...", "You need to...", "The best option is..."
+- End with: "Consider discussing your specific situation with an FCA-regulated financial advisor"
+- Remove any phrases like "Would you like to know more..." or "I can provide more information..."
+
+Educational focus areas to explore:
+- If unused allowance exists: "Worth exploring: How moving £X to an ISA could protect future growth from tax"
+- Time pressure: "Consider: Only ${monthsRemaining} months remaining to use this year's allowance"
+- If high tax band: "Research area: How ISAs become more valuable for ${formData.taxBand}-rate taxpayers"
+
+Keep under 250 words, educational tone, end with advisor referral.`;
+}
 
         function generatePensionPrompt(formData) {
-            const employerContrib = parseFloat(formData.employerMatch) || 0;
-            const currentContrib = parseFloat(formData.currentPension) || 0;
-            const missedMatch = Math.max(0, employerContrib - currentContrib);
-            
-            return `You are a friendly UK pension education specialist. Provide educational information about pension opportunities.
+    const employerContrib = parseFloat(formData.employerMatch) || 0;
+    const currentContrib = parseFloat(formData.currentPension) || 0;
+    const missedMatch = Math.max(0, employerContrib - currentContrib);
+    const annualSalary = parseFloat(formData.salary);
+    const missedFreeMoney = (missedMatch / 100) * annualSalary;
+    
+    return `You are a friendly UK pension education specialist. Provide educational information about pension opportunities.
 
 User situation:
 - Annual gross salary: £${formData.salary}
 - Current tax band: ${formData.taxBand} rate
 - Current pension contributions: ${formData.currentPension}%
-- Employer matches up to: ${formData.employerMatch}%
-- Missed employer match: ${missedMatch}%
-- Salary exchange available: ${formData.salaryExchange}
+- Employer contribution: ${formData.employerMatch}%
+- Potential missed matching: £${missedFreeMoney.toFixed(0)} annually
 
-Explain how pension contributions and employer matching work. Use educational language. Keep response under 300 words.`;
-        }
+IMPORTANT LANGUAGE GUIDELINES:
+- Use educational phrases: "Consider researching...", "Worth investigating...", "Explore options for..."
+- AVOID advisory language: "You should increase...", "I recommend maxing out..."
+- Frame as learning opportunities: "Many people explore...", "Research suggests..."
+- End with: "Consider discussing pension strategies with an FCA-regulated financial advisor"
+
+Educational areas to explore:
+- If missing employer match: "Research area: How increasing contributions to ${formData.employerMatch}% could capture £${missedFreeMoney.toFixed(0)} in employer contributions"
+- Tax relief: "Worth exploring: How pension contributions provide ${formData.taxBand === 'higher' ? '40%' : '20%'} tax relief"
+- If salary sacrifice available: "Consider investigating: How salary sacrifice could reduce both tax and National Insurance"
+
+Keep under 250 words, educational focus, conclude with professional advice suggestion.`;
+}
 
         function generateSavingsPrompt(data, savingsAccounts) {
-            const unusedISA = 20000 - data.currentIsa;
-            let savingsBreakdown = "Savings accounts:\n";
-            let totalSavings = 0;
-            
-            savingsAccounts.forEach((account, index) => {
-                savingsBreakdown += `- ${account.type}: £${account.amount} at ${account.rate}%\n`;
-                totalSavings += parseFloat(account.amount);
-            });
-            
-            return `You are a friendly UK savings education specialist. Provide educational information about savings optimization.
+    const unusedISA = 20000 - data.currentIsa;
+    let savingsBreakdown = "";
+    let totalSavings = 0;
+    let bestRate = 0;
+    
+    savingsAccounts.forEach((account, index) => {
+        savingsBreakdown += `- ${account.type}: £${account.amount} at ${account.rate}%\n`;
+        totalSavings += parseFloat(account.amount);
+        bestRate = Math.max(bestRate, parseFloat(account.rate));
+    });
+    
+    const weightedAverageRate = totalSavings > 0 ? savingsAccounts.reduce((sum, acc) => {
+        return sum + (parseFloat(acc.amount) * parseFloat(acc.rate));
+    }, 0) / totalSavings : 0;
+    
+    return `You are a friendly UK savings education specialist. Provide educational information about savings optimization.
 
 User situation:
 - Tax band: ${data.taxBand} rate
 - Total cash savings: £${totalSavings}
+- Current rates: ${bestRate}% best, ${weightedAverageRate.toFixed(2)}% average
 - Unused ISA allowance: £${unusedISA}
-- ${savingsBreakdown}
 
-Explain how different savings options work and tax implications. Use educational language. Keep response under 300 words.`;
-        }
+IMPORTANT LANGUAGE GUIDELINES:
+- Educational framing: "Consider exploring...", "Research options for...", "Worth investigating..."
+- Avoid prescriptive advice: Never "You should switch..." or "The best account is..."
+- Focus on education: "Many savers research...", "Options to explore include..."
+- End with: "Consider reviewing your specific needs with an FCA-regulated financial advisor"
+
+Educational topics to explore:
+- Rate optimization: "Research area: How current market rates compare to your ${weightedAverageRate.toFixed(2)}% average"
+- If unused ISA space: "Worth exploring: Whether moving savings to ISA protection makes sense"
+- Personal Savings Allowance: "Consider: How your £${data.taxBand === 'higher' ? '500' : '1000'} tax-free allowance affects your strategy"
+
+Keep under 250 words, educational approach, end with advisor consultation suggestion.`;
+}
 
         // Calculate tax implications
         function calculateTaxImplications(data, savingsAccounts) {
@@ -1045,44 +1084,65 @@ Explain how different savings options work and tax implications. Use educational
                 loadingDiv.style.display = 'none';
                 
                 resultsContent.innerHTML = `
-                    <div class="results-header">
-                        <h2 class="results-title">Your MoneyBright Report</h2>
-                        <p class="results-subtitle">Simple ways to brighten your financial picture</p>
-                    </div>
-                    
-                    <div class="result-card">
-                        <h3>
-                            <div class="result-icon icon-isa">🏦</div>
-                            ISA Brightener
-                        </h3>
-                        <div>${isaResult.replace(/\n/g, '<br>')}</div>
-                    </div>
-                    
-                    <div class="result-card">
-                        <h3>
-                            <div class="result-icon icon-pension">💼</div>
-                            Pension Booster
-                        </h3>
-                        <div>${pensionResult.replace(/\n/g, '<br>')}</div>
-                    </div>
-                    
-                    <div class="result-card">
-                        <h3>
-                            <div class="result-icon icon-savings">💰</div>
-                            Savings Brightener
-                        </h3>
-                        <div>${savingsResult.replace(/\n/g, '<br>')}</div>
-                    </div>
-                    
-                    <div class="tax-summary">
-                        <h4>💡 Your Money Brightener Summary</h4>
-                        <p><strong>Current annual tax on savings interest:</strong> £${taxImplications.currentTax.toFixed(2)}</p>
-                        <p><strong>Potential annual tax with improvements:</strong> £${taxImplications.optimizedTax.toFixed(2)}</p>
-                        <p><strong>Annual difference:</strong> £${taxImplications.taxSaved.toFixed(2)}</p>
-                        <p><strong>Amount perfect for ISA benefits:</strong> £${taxImplications.savingsMovedToISA.toFixed(0)}</p>
-                        <p><em>These are educational examples to brighten your understanding!</em></p>
-                    </div>
-                `;
+    <div class="results-header">
+        <h2 class="results-title">Your MoneyBright Educational Insights</h2>
+        <p class="results-subtitle">Research areas and next steps to explore further</p>
+        <div class="educational-disclaimer" style="background: #f0f9ff; border: 1px solid #0ea5e9; padding: 16px; border-radius: 12px; margin: 16px 0;">
+            <p style="margin: 0; color: #0c4a6e; font-size: 14px;">
+                <strong>Educational Information Only:</strong> These insights are for research purposes. 
+                Consider discussing your specific situation with an FCA-regulated financial advisor.
+            </p>
+        </div>
+    </div>
+    
+    <div class="result-card">
+        <h3>
+            <div class="result-icon icon-isa">🏦</div>
+            ISA Research Areas
+        </h3>
+        <div>${isaResult.replace(/\n/g, '<br>')}</div>
+    </div>
+    
+    <div class="result-card">
+        <h3>
+            <div class="result-icon icon-pension">💼</div>
+            Pension Exploration Points
+        </h3>
+        <div>${pensionResult.replace(/\n/g, '<br>')}</div>
+    </div>
+    
+    <div class="result-card">
+        <h3>
+            <div class="result-icon icon-savings">💰</div>
+            Savings Optimization Research
+        </h3>
+        <div>${savingsResult.replace(/\n/g, '<br>')}</div>
+    </div>
+    
+    <div class="tax-summary">
+        <h4>💡 Your Financial Research Summary</h4>
+        <p><strong>Current estimated annual tax on savings:</strong> £${taxImplications.currentTax.toFixed(2)}</p>
+        <p><strong>Potential annual tax with optimization:</strong> £${taxImplications.optimizedTax.toFixed(2)}</p>
+        <p><strong>Research opportunity:</strong> £${taxImplications.taxSaved.toFixed(2)} potential annual difference</p>
+        <p><strong>ISA research amount:</strong> £${taxImplications.savingsMovedToISA.toFixed(0)}</p>
+        <p style="font-style: italic; color: #6b7280;">
+            These are educational calculations for research purposes. Consider consulting an FCA-regulated advisor for personalized guidance.
+        </p>
+    </div>
+    
+    <div class="educational-footer" style="background: #f8fafc; border-radius: 12px; padding: 24px; margin-top: 32px;">
+        <h4 style="color: #1f2937; margin-bottom: 16px;">📚 Next Steps for Your Financial Education</h4>
+        <ul style="color: #4b5563; line-height: 1.6;">
+            <li><strong>Research:</strong> Explore the areas highlighted above using reputable financial education websites</li>
+            <li><strong>Compare:</strong> Look at multiple options for any financial products mentioned</li>
+            <li><strong>Seek advice:</strong> Consider consulting an FCA-regulated financial advisor for personalized guidance</li>
+            <li><strong>Take time:</strong> Don't rush financial decisions - research thoroughly first</li>
+        </ul>
+        <p style="margin-top: 16px; font-size: 13px; color: #6b7280;">
+            MoneyBright provides educational information only. We are not regulated by the FCA and do not provide financial advice.
+        </p>
+    </div>
+`;
                 
             } catch (error) {
                 loadingDiv.style.display = 'none';
