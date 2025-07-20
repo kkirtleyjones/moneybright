@@ -1036,13 +1036,13 @@ Keep under 250 words, educational approach, end with advisor consultation sugges
             const actualCurrentTax = psaData.taxableInterest * taxRate;
             
             return {
-                currentTax: actualCurrentTax,
-                optimizedTax: optimizedTax,
-                taxSaved: currentTax - optimizedTax,
-                savingsMovedToISA: savingsMovedToISA,
-                psaData: psaData
-            };
-        }
+        currentTax: actualCurrentTax,
+        optimizedTax: optimizedTax,
+        taxSaved: actualCurrentTax - optimizedTax,
+        savingsMovedToISA: savingsMovedToISA,
+        psaData: psaData
+    };
+}
 
         // Claude API call function
         async function callClaudeAPI(prompt) {
