@@ -1027,15 +1027,16 @@ Keep under 250 words, educational approach, end with advisor consultation sugges
             const remainingSavings = totalSavings - savingsMovedToISA;
             const optimizedRate = 0.048;
             const optimizedTaxableInterest = remainingSavings * optimizedRate;
-            
-            const currentTax = currentTaxableInterest * taxRate;
-            const optimizedTax = optimizedTaxableInterest * taxRate;
 
             const psaData = calculatePersonalSavingsAllowance(data.taxBand, currentTaxableInterest);
+            
+            const optimizedPsaData = calculatePersonalSavingsAllowance(data.taxBand, optimizedTaxableInterest);
+            const optimizedTax = optimizedPsaData.taxableInterest * taxRate;
+
             const actualCurrentTax = psaData.taxableInterest * taxRate;
             
             return {
-                currentTax: currentTax,
+                currentTax: actualCurrentTax,
                 optimizedTax: optimizedTax,
                 taxSaved: currentTax - optimizedTax,
                 savingsMovedToISA: savingsMovedToISA,
