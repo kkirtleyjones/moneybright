@@ -1040,6 +1040,65 @@ Keep under 250 words, educational approach, end with advisor consultation sugges
         psaData: psaData
     };
 }
+        function generatePrioritizedActions(data, taxImplications, psaData) {
+    const actions = [];
+    const salary = parseFloat(data.salary);
+    const currentPension = parseFloat(data.currentPension) || 0;
+    const employerMatch = parseFloat(data.employerMatch) || 0;
+    
+    // Priority 1: Free money (missed employer match)
+    const missedMatch = Math.max(0, employerMatch - currentPension);
+    if (missedMatch > 0) {
+        const annualMissed = (missedMatch / 100) * salary;
+        actions.push({
+            priority: 1,
+            icon: "🎯",
+            title: `Increase pension contributions to ${employerMatch}%`,
+            benefit: `Capture £${annualMissed.toFixed(0)} in free employer matching annually`,
+            urgency: "High Priority",
+            reasoning: "Never leave free money on the table"
+        });
+    }
+    
+    // Priority 2: PSA optimization for higher earners
+    if (psaData.isAtRisk && taxImplications.savingsMovedToISA > 0) {
+        actions.push({
+            priority: 2,
+            icon: "🛡️",
+            title: `Consider moving £${Math.min(10000, taxImplications.savingsMovedToISA).toFixed(0)} to ISA protection`,
+            benefit: `Protect future growth from tax when you exceed your £${psaData.allowance} allowance`,
+            urgency: "This Tax Year",
+            reasoning: "You're using most of your tax-free interest allowance"
+        });
+    }
+    
+    // Priority 3: General ISA optimization
+    else if (taxImplications.savingsMovedToISA > 5000 && taxImplications.taxSaved > 50) {
+        const monthsRemaining = getMonthsRemaining();
+        actions.push({
+            priority: 3,
+            icon: "💡",
+            title: `Research ISA options for £${Math.min(10000, taxImplications.savingsMovedToISA).toFixed(0)} of savings`,
+            benefit: `Potential £${taxImplications.taxSaved.toFixed(0)} annual tax research opportunity`,
+            urgency: `${monthsRemaining} months left this tax year`,
+            reasoning: "Unused ISA allowance expires in April"
+        });
+    }
+    
+    // Priority 4: Pension optimization for higher rate taxpayers
+    if (data.taxBand === 'higher' && currentPension < 15) {
+        actions.push({
+            priority: 4,
+            icon: "📈",
+            title: `Research increasing pension contributions beyond employer match`,
+            benefit: `Explore 40% tax relief benefits for higher-rate taxpayers`,
+            urgency: "Long-term Wealth Building",
+            reasoning: "Higher-rate taxpayers get more tax relief on pension contributions"
+        });
+    }
+    
+    return actions.slice(0, 3); // Top 3 only
+}
 
         // Claude API call function
         async function callClaudeAPI(prompt) {
@@ -1098,16 +1157,38 @@ Keep under 250 words, educational approach, end with advisor consultation sugges
                 const savingsPrompt = generateSavingsPrompt(data, savingsAccounts);
                 
                 const taxImplications = calculateTaxImplications(data, savingsAccounts);
-                
-                const [isaResult, pensionResult, savingsResult] = await Promise.all([
+                const taxImplications = calculateTaxImplications(data, savingsAccounts);
+
+// Generate prioritized actions
+const prioritizedActions = generatePrioritizedActions(data, taxImplications, taxImplications.psaData);
+
+// Generate actions HTML
+const actionsHTML = prioritizedActions.map((action, index) => `
+    <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #22c55e;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <span style="font-size: 24px;">${action.icon}</span>
+            <span style="background: #22c55e; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                ${action.urgency}
+            </span>
+        </div>
+        <h4 style="color: #15803d; margin-bottom: 8px; font-size: 1.1rem;">${action.title}</h4>
+        <p style="color: #16a34a; font-weight: 600; margin-bottom: 8px;">${action.benefit}</p>
+        <p style="color: #6b7280; font-size: 14px; margin: 0;">${action.reasoning}</p>
+    </div>
+`).join('');
+
+const [isaResult, pensionResult, savingsResult] = await Promise.all([
                     callClaudeAPI(isaPrompt),
                     callClaudeAPI(pensionPrompt),
                     callClaudeAPI(savingsPrompt)
                 ]);
                 
                 loadingDiv.style.display = 'none';
-                
-                resultsContent.innerHTML = `
+
+// Populate the prioritized actions
+document.getElementById('prioritizedActions').innerHTML = actionsHTML;
+
+resultsContent.innerHTML = `
     <div class="results-header">
         <h2 class="results-title">Your MoneyBright Educational Insights</h2>
         <p class="results-subtitle">Research areas and next steps to explore further</p>
@@ -1117,6 +1198,19 @@ Keep under 250 words, educational approach, end with advisor consultation sugges
                 Consider discussing your specific situation with an FCA-regulated financial advisor.
             </p>
         </div>
+        </div>
+
+<div class="action-summary" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 2px solid #22c55e; border-radius: 20px; padding: 32px; margin: 24px 0;">
+    <h3 style="color: #15803d; margin-bottom: 24px; font-size: 1.4rem; display: flex; align-items: center; gap: 12px;">
+        🎯 Your Top 3 Research Priorities
+    </h3>
+    <div id="prioritizedActions"></div>
+    <p style="margin-top: 20px; font-size: 14px; color: #15803d; font-style: italic;">
+        These are educational research priorities, not financial advice. Consider discussing with an FCA-regulated advisor.
+    </p>
+</div>
+
+<div class="psa-summary" style="background: linear-gradient(135deg, #eff6ff, #dbeafe);">
     </div>
     <div class="psa-summary" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #93c5fd; border-radius: 16px; padding: 24px; margin: 20px 0;">
     <h4 style="color: #1e40af; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
