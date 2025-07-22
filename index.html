@@ -1004,38 +1004,35 @@ Keep under 250 words, educational approach, end with advisor consultation sugges
 
         // Calculate tax implications
         function calculateTaxImplications(data, savingsAccounts) {
-            const taxRates = {
-                'basic': 0.20,
-                'higher': 0.40,
-                'additional': 0.45
-            };
-            
-            const taxRate = taxRates[data.taxBand] || 0;
-            const unusedISA = Math.max(0, 20000 - parseInt(data.currentIsa));
-            
-            let currentTaxableInterest = 0;
-            let totalSavings = 0;
-            
-            savingsAccounts.forEach(account => {
-                const amount = parseFloat(account.amount);
-                const rate = parseFloat(account.rate) / 100;
-                totalSavings += amount;
-                currentTaxableInterest += amount * rate;
-            });
-            
-            const savingsMovedToISA = Math.min(unusedISA, totalSavings);
-            const remainingSavings = totalSavings - savingsMovedToISA;
-            const optimizedRate = 0.048;
-            const optimizedTaxableInterest = remainingSavings * optimizedRate;
-
-            const psaData = calculatePersonalSavingsAllowance(data.taxBand, currentTaxableInterest);
-            
-            const optimizedPsaData = calculatePersonalSavingsAllowance(data.taxBand, optimizedTaxableInterest);
-            const optimizedTax = optimizedPsaData.taxableInterest * taxRate;
-
-            const actualCurrentTax = psaData.taxableInterest * taxRate;
-            
-            return {
+    const taxRates = {
+        'basic': 0.20,
+        'higher': 0.40,
+        'additional': 0.45
+    };
+    
+    const taxRate = taxRates[data.taxBand] || 0;
+    const unusedISA = Math.max(0, 20000 - parseInt(data.currentIsa));
+    
+    let currentTaxableInterest = 0;
+    let totalSavings = 0;
+    
+    savingsAccounts.forEach(account => {
+        const amount = parseFloat(account.amount);
+        const rate = parseFloat(account.rate) / 100;
+        totalSavings += amount;
+        currentTaxableInterest += amount * rate;
+    });
+    
+    const savingsMovedToISA = Math.min(unusedISA, totalSavings);
+    const remainingSavings = totalSavings - savingsMovedToISA;
+    const optimizedTaxableInterest = currentTaxableInterest * (remainingSavings / totalSavings);
+    
+    const psaData = calculatePersonalSavingsAllowance(data.taxBand, currentTaxableInterest);
+    const optimizedPsaData = calculatePersonalSavingsAllowance(data.taxBand, optimizedTaxableInterest);
+    const optimizedTax = optimizedPsaData.taxableInterest * taxRate;
+    const actualCurrentTax = psaData.taxableInterest * taxRate;
+    
+    return {
         currentTax: actualCurrentTax,
         optimizedTax: optimizedTax,
         taxSaved: actualCurrentTax - optimizedTax,
