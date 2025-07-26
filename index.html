@@ -1124,173 +1124,171 @@ Keep under 250 words, educational approach, end with advisor consultation sugges
     }
 }
 
-        // Handle form submission
-        document.getElementById('financeForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const data = Object.fromEntries(formData.entries());
-            
-            const savingsAmounts = formData.getAll('savingsAmount[]');
-            const savingsRates = formData.getAll('savingsRate[]');
-            const savingsTypes = formData.getAll('savingsType[]');
-            
-            const savingsAccounts = savingsAmounts.map((amount, index) => ({
-                amount: parseFloat(amount),
-                rate: parseFloat(savingsRates[index]),
-                type: savingsTypes[index]
-            }));
-            
-            data.cashSavings = savingsAccounts.reduce((total, account) => total + account.amount, 0);
-            
-            const resultsDiv = document.getElementById('results');
-            const loadingDiv = document.getElementById('loading');
-            const resultsContent = document.getElementById('resultsContent');
-            
-            resultsDiv.classList.add('show');
-            loadingDiv.style.display = 'block';
-            resultsContent.innerHTML = '';
-            
-            try {
-                const isaPrompt = generateISAPrompt(data);
-                const pensionPrompt = generatePensionPrompt(data);
-                const savingsPrompt = generateSavingsPrompt(data, savingsAccounts);
-                
-                const taxImplications = calculateTaxImplications(data, savingsAccounts);
-
-// Generate prioritized actions
-const prioritizedActions = generatePrioritizedActions(data, taxImplications, taxImplications.psaData);
-
-// Generate actions HTML
-const actionsHTML = prioritizedActions.map((action, index) => `
-    <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #22c55e;">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-            <span style="font-size: 24px;">${action.icon}</span>
-            <span style="background: #22c55e; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
-                ${action.urgency}
-            </span>
-        </div>
-        <h4 style="color: #15803d; margin-bottom: 8px; font-size: 1.1rem;">${action.title}</h4>
-        <p style="color: #16a34a; font-weight: 600; margin-bottom: 8px;">${action.benefit}</p>
-        <p style="color: #6b7280; font-size: 14px; margin: 0;">${action.reasoning}</p>
-    </div>
-`).join('');
-
-const [isaResult, pensionResult, savingsResult] = await Promise.all([
-                    callClaudeAPI(isaPrompt),
-                    callClaudeAPI(pensionPrompt),
-                    callClaudeAPI(savingsPrompt)
-                ]);
-                
-                loadingDiv.style.display = 'none';
-
-// // Populate the prioritized actions
-// document.getElementById('prioritizedActions').innerHTML = actionsHTML;
-
-document.getElementById('prioritizedActions').innerHTML = actionsHTML;
-
-resultsContent.innerHTML = `
-    <div class="results-header">
-        <h2 class="results-title">Your MoneyBright Educational Insights</h2>
-        <p class="results-subtitle">Research areas and next steps to explore further</p>
-        <div class="educational-disclaimer" style="background: #f0f9ff; border: 1px solid #0ea5e9; padding: 16px; border-radius: 12px; margin: 16px 0;">
-            <p style="margin: 0; color: #0c4a6e; font-size: 14px;">
-                <strong>Educational Information Only:</strong> These insights are for research purposes. 
-                Consider discussing your specific situation with an FCA-regulated financial advisor.
-            </p>
-        </div>
-        </div>
-
-<div class="action-summary" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 2px solid #22c55e; border-radius: 20px; padding: 32px; margin: 24px 0;">
-    <h3 style="color: #15803d; margin-bottom: 24px; font-size: 1.4rem; display: flex; align-items: center; gap: 12px;">
-        🎯 Your Top 3 Research Priorities
-    </h3>
-    <div id="prioritizedActions"></div>
-    <p style="margin-top: 20px; font-size: 14px; color: #15803d; font-style: italic;">
-        These are educational research priorities, not financial advice. Consider discussing with an FCA-regulated advisor.
-    </p>
-</div>
-
-<div class="psa-summary" style="background: linear-gradient(135deg, #eff6ff, #dbeafe);">
-    </div>
-    <div class="psa-summary" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #93c5fd; border-radius: 16px; padding: 24px; margin: 20px 0;">
-    <h4 style="color: #1e40af; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-        💡 Your Personal Savings Allowance
-    </h4>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-        <div>
-            <p style="margin: 0 0 8px 0;"><strong>Annual allowance:</strong> £${taxImplications.psaData.allowance}</p>
-            <p style="margin: 0 0 8px 0;"><strong>Currently using:</strong> £${taxImplications.psaData.used.toFixed(2)}</p>
-        </div>
-        <div>
-            <p style="margin: 0 0 8px 0;"><strong>Remaining:</strong> £${taxImplications.psaData.remaining.toFixed(2)}</p>
-            <p style="margin: 0 0 8px 0;"><strong>Usage:</strong> ${taxImplications.psaData.percentageUsed}%</p>
-        </div>
-    </div>
-    ${taxImplications.psaData.isAtRisk ? 
-        '<div style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px;"><p style="color: #dc2626; font-weight: 600; margin: 0;">⚠️ You\'re using over 80% of your allowance - consider moving money to ISAs to protect future growth</p></div>' : 
-        '<div style="background: #f0f9ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 12px;"><p style="color: #1e40af; font-weight: 600; margin: 0;">✅ You have good headroom in your Personal Savings Allowance</p></div>'
-    }
-</div>
-    <div class="result-card">
-        <h3>
-            <div class="result-icon icon-isa">🏦</div>
-            ISA Research Areas
-        </h3>
-        <div>${isaResult.replace(/\n/g, '<br>')}</div>
-    </div>
+        // Handle form submission - FIXED VERSION
+document.getElementById('financeForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
     
-    <div class="result-card">
-        <h3>
-            <div class="result-icon icon-pension">💼</div>
-            Pension Exploration Points
-        </h3>
-        <div>${pensionResult.replace(/\n/g, '<br>')}</div>
-    </div>
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
     
-    <div class="result-card">
-        <h3>
-            <div class="result-icon icon-savings">💰</div>
-            Savings Optimization Research
-        </h3>
-        <div>${savingsResult.replace(/\n/g, '<br>')}</div>
-    </div>
+    const savingsAmounts = formData.getAll('savingsAmount[]');
+    const savingsRates = formData.getAll('savingsRate[]');
+    const savingsTypes = formData.getAll('savingsType[]');
     
-    <div class="tax-summary">
-        <h4>💡 Your Financial Research Summary</h4>
-        <p><strong>Current estimated annual tax on savings:</strong> £${taxImplications.currentTax.toFixed(2)}</p>
-        <p><strong>Potential annual tax with optimization:</strong> £${taxImplications.optimizedTax.toFixed(2)}</p>
-        <p><strong>Research opportunity:</strong> £${taxImplications.taxSaved.toFixed(2)} potential annual difference</p>
-        <p><strong>ISA research amount:</strong> £${taxImplications.savingsMovedToISA.toFixed(0)}</p>
-        <p style="font-style: italic; color: #6b7280;">
-            These are educational calculations for research purposes. Consider consulting an FCA-regulated advisor for personalized guidance.
-        </p>
-    </div>
+    const savingsAccounts = savingsAmounts.map((amount, index) => ({
+        amount: parseFloat(amount),
+        rate: parseFloat(savingsRates[index]),
+        type: savingsTypes[index]
+    }));
     
-    <div class="educational-footer" style="background: #f8fafc; border-radius: 12px; padding: 24px; margin-top: 32px;">
-        <h4 style="color: #1f2937; margin-bottom: 16px;">📚 Next Steps for Your Financial Education</h4>
-        <ul style="color: #4b5563; line-height: 1.6;">
-            <li><strong>Research:</strong> Explore the areas highlighted above using reputable financial education websites</li>
-            <li><strong>Compare:</strong> Look at multiple options for any financial products mentioned</li>
-            <li><strong>Seek advice:</strong> Consider consulting an FCA-regulated financial advisor for personalized guidance</li>
-            <li><strong>Take time:</strong> Don't rush financial decisions - research thoroughly first</li>
-        </ul>
-        <p style="margin-top: 16px; font-size: 13px; color: #6b7280;">
-            MoneyBright provides educational information only. We are not regulated by the FCA and do not provide financial advice.
-        </p>
-    </div>
-`;
-                
-            } catch (error) {
-                loadingDiv.style.display = 'none';
-                resultsContent.innerHTML = `
-                    <div class="result-card">
-                        <h3>⚠️ Error</h3>
-                        <p>Sorry, there was an error analyzing your finances. Please try again later.</p>
+    data.cashSavings = savingsAccounts.reduce((total, account) => total + account.amount, 0);
+    
+    const resultsDiv = document.getElementById('results');
+    const loadingDiv = document.getElementById('loading');
+    const resultsContent = document.getElementById('resultsContent');
+    
+    resultsDiv.classList.add('show');
+    loadingDiv.style.display = 'block';
+    resultsContent.innerHTML = '';
+    
+    try {
+        const isaPrompt = generateISAPrompt(data);
+        const pensionPrompt = generatePensionPrompt(data);
+        const savingsPrompt = generateSavingsPrompt(data, savingsAccounts);
+        
+        const taxImplications = calculateTaxImplications(data, savingsAccounts);
+
+        // Generate prioritized actions
+        const prioritizedActions = generatePrioritizedActions(data, taxImplications, taxImplications.psaData);
+
+        // Generate actions HTML
+        const actionsHTML = prioritizedActions.map((action, index) => `
+            <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #22c55e;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <span style="font-size: 24px;">${action.icon}</span>
+                    <span style="background: #22c55e; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                        ${action.urgency}
+                    </span>
+                </div>
+                <h4 style="color: #15803d; margin-bottom: 8px; font-size: 1.1rem;">${action.title}</h4>
+                <p style="color: #16a34a; font-weight: 600; margin-bottom: 8px;">${action.benefit}</p>
+                <p style="color: #6b7280; font-size: 14px; margin: 0;">${action.reasoning}</p>
+            </div>
+        `).join('');
+
+        const [isaResult, pensionResult, savingsResult] = await Promise.all([
+            callClaudeAPI(isaPrompt),
+            callClaudeAPI(pensionPrompt),
+            callClaudeAPI(savingsPrompt)
+        ]);
+        
+        loadingDiv.style.display = 'none';
+
+        // FIXED: Create the HTML structure FIRST
+        resultsContent.innerHTML = `
+            <div class="results-header">
+                <h2 class="results-title">Your MoneyBright Educational Insights</h2>
+                <p class="results-subtitle">Research areas and next steps to explore further</p>
+                <div class="educational-disclaimer" style="background: #f0f9ff; border: 1px solid #0ea5e9; padding: 16px; border-radius: 12px; margin: 16px 0;">
+                    <p style="margin: 0; color: #0c4a6e; font-size: 14px;">
+                        <strong>Educational Information Only:</strong> These insights are for research purposes. 
+                        Consider discussing your specific situation with an FCA-regulated financial advisor.
+                    </p>
+                </div>
+            </div>
+
+            <div class="action-summary" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 2px solid #22c55e; border-radius: 20px; padding: 32px; margin: 24px 0;">
+                <h3 style="color: #15803d; margin-bottom: 24px; font-size: 1.4rem; display: flex; align-items: center; gap: 12px;">
+                    🎯 Your Top 3 Research Priorities
+                </h3>
+                <div id="prioritizedActions"></div>
+                <p style="margin-top: 20px; font-size: 14px; color: #15803d; font-style: italic;">
+                    These are educational research priorities, not financial advice. Consider discussing with an FCA-regulated advisor.
+                </p>
+            </div>
+
+            <div class="psa-summary" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #93c5fd; border-radius: 16px; padding: 24px; margin: 20px 0;">
+                <h4 style="color: #1e40af; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    💡 Your Personal Savings Allowance
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <p style="margin: 0 0 8px 0;"><strong>Annual allowance:</strong> £${taxImplications.psaData.allowance}</p>
+                        <p style="margin: 0 0 8px 0;"><strong>Currently using:</strong> £${taxImplications.psaData.used.toFixed(2)}</p>
                     </div>
-                `;
-            }
-        });
+                    <div>
+                        <p style="margin: 0 0 8px 0;"><strong>Remaining:</strong> £${taxImplications.psaData.remaining.toFixed(2)}</p>
+                        <p style="margin: 0 0 8px 0;"><strong>Usage:</strong> ${taxImplications.psaData.percentageUsed}%</p>
+                    </div>
+                </div>
+                ${taxImplications.psaData.isAtRisk ? 
+                    '<div style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px;"><p style="color: #dc2626; font-weight: 600; margin: 0;">⚠️ You\'re using over 80% of your allowance - consider moving money to ISAs to protect future growth</p></div>' : 
+                    '<div style="background: #f0f9ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 12px;"><p style="color: #1e40af; font-weight: 600; margin: 0;">✅ You have good headroom in your Personal Savings Allowance</p></div>'
+                }
+            </div>
+            
+            <div class="result-card">
+                <h3>
+                    <div class="result-icon icon-isa">🏦</div>
+                    ISA Research Areas
+                </h3>
+                <div>${isaResult.replace(/\n/g, '<br>')}</div>
+            </div>
+            
+            <div class="result-card">
+                <h3>
+                    <div class="result-icon icon-pension">💼</div>
+                    Pension Exploration Points
+                </h3>
+                <div>${pensionResult.replace(/\n/g, '<br>')}</div>
+            </div>
+            
+            <div class="result-card">
+                <h3>
+                    <div class="result-icon icon-savings">💰</div>
+                    Savings Optimization Research
+                </h3>
+                <div>${savingsResult.replace(/\n/g, '<br>')}</div>
+            </div>
+            
+            <div class="tax-summary">
+                <h4>💡 Your Financial Research Summary</h4>
+                <p><strong>Current estimated annual tax on savings:</strong> £${taxImplications.currentTax.toFixed(2)}</p>
+                <p><strong>Potential annual tax with optimization:</strong> £${taxImplications.optimizedTax.toFixed(2)}</p>
+                <p><strong>Research opportunity:</strong> £${taxImplications.taxSaved.toFixed(2)} potential annual difference</p>
+                <p><strong>ISA research amount:</strong> £${taxImplications.savingsMovedToISA.toFixed(0)}</p>
+                <p style="font-style: italic; color: #6b7280;">
+                    These are educational calculations for research purposes. Consider consulting an FCA-regulated advisor for personalized guidance.
+                </p>
+            </div>
+            
+            <div class="educational-footer" style="background: #f8fafc; border-radius: 12px; padding: 24px; margin-top: 32px;">
+                <h4 style="color: #1f2937; margin-bottom: 16px;">📚 Next Steps for Your Financial Education</h4>
+                <ul style="color: #4b5563; line-height: 1.6;">
+                    <li><strong>Research:</strong> Explore the areas highlighted above using reputable financial education websites</li>
+                    <li><strong>Compare:</strong> Look at multiple options for any financial products mentioned</li>
+                    <li><strong>Seek advice:</strong> Consider consulting an FCA-regulated financial advisor for personalized guidance</li>
+                    <li><strong>Take time:</strong> Don't rush financial decisions - research thoroughly first</li>
+                </ul>
+                <p style="margin-top: 16px; font-size: 13px; color: #6b7280;">
+                    MoneyBright provides educational information only. We are not regulated by the FCA and do not provide financial advice.
+                </p>
+            </div>
+        `;
+
+        // FIXED: Now populate the actions AFTER the element exists
+        document.getElementById('prioritizedActions').innerHTML = actionsHTML;
+        
+    } catch (error) {
+        loadingDiv.style.display = 'none';
+        resultsContent.innerHTML = `
+            <div class="result-card">
+                <h3>⚠️ Error</h3>
+                <p>Sorry, there was an error analyzing your finances. Please try again later.</p>
+            </div>
+        `;
+    }
+});
 
         // Event listeners
         document.getElementById('salary').addEventListener('input', function() {
